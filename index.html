@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>頻道推薦系統</title>
+</head>
+<body>
+  <h1>🎯 ARTALE 頻道推薦器</h1>
+  <p>輸入你的出生年月日，即可獲得今日幸運頻道與衝捲建議</p>
+  <input type="date" id="birthdate" />
+  <button onclick="recommendChannel()">獲得推薦</button>
+  <div id="result"></div>
+  <script>
+    async function recommendChannel() {
+      const birth = document.getElementById("birthdate").value;
+      const date = new Date(birth);
+      if (isNaN(date.getTime())) {
+        document.getElementById("result").innerText = "❗ 請正確輸入生日 (格式: YYYY-MM-DD)";
+        return;
+      }
+
+      const today = new Date().toISOString().split("T")[0];
+      const response = await fetch("config.json");
+      const config = await response.json();
+      const daily = config[today] || {};
+
+      const mainChannels = (daily.recommendedChannels || {}).default || [];
+      const altChannels = (daily.recommendedChannels || {}).fallback || [];
+      const zodiac = daily.zodiac || "未知";
+      const horoscope = daily.horoscope || "未知";
+      const tail = daily.tail || [];
+      const tang = daily.tang || "";
+      const grindTime = daily.grindTime || "";
+      const detail = (daily.horoscopes || {})[horoscope] || "";
+
+      document.getElementById("result").innerHTML = `
+        🔮 <b>生肖：</b>${zodiac}<br>
+        🌌 <b>星座：</b>${horoscope}<br><br>
+        📡 <b>推薦頻道：</b>${mainChannels.join("、")}<br>
+        ✨ 備選頻道：${altChannels.join("、")}<br>
+        🔢 尾號推薦：${tail.join("、")}<br><br>
+        📜 <b>衝捲建議：</b>${detail}<br><br>
+        🧙‍♂️ <b>唐楊琦老師：</b>${tang}<br>
+        ⏰ <b>刷怪時段：</b>${grindTime}
+      `;
+    }
+  </script>
+</body>
+</html>
